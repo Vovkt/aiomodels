@@ -1,56 +1,15 @@
-import asyncio
 import typing as t
 
+from bson import ObjectId
+from motor.core import AgnosticDatabase, AgnosticCollection
 from pymongo.errors import DuplicateKeyError
 from pymongo.collection import ReturnDocument
-from bson import ObjectId
-from motor.core import AgnosticDatabase, AgnosticCollection, AgnosticCursor
-from motor.motor_asyncio import AsyncIOMotorClient
 
-Projection = t.Dict[str, bool]
-Query = t.Dict[str, t.Any]
-RawDocument = t.Dict[str, t.Any]
-Document = t.Dict[str, t.Any]
+from .types import Document, Projection, RawDocument, Query
+from .cursor import WrappedCursor
 
 
-class WrappedCursor:
-    def __init__(
-        self, model: "Model", *, cursor: AgnosticCursor = None, **kwargs
-    ) -> None:
-        self.model: "Model" = model
-        self.cursor: AgnosticCursor = cursor or self.model.collection.find(**kwargs)
-
-    def __aiter__(self) -> "WrappedCursor":
-        return self
-
-    async def __anext__(self) -> RawDocument:
-        return await self.model.after_read(await self.cursor.next())
-
-    def __await__(self):
-        # todo types?
-        return self.to_list().__await__()
-
-    async def to_list(self, length: int = None) -> t.List[RawDocument]:
-        # todo gather?
-        return [
-            await self.model.after_read(doc)
-            for doc in await self.cursor.to_list(length)
-        ]
-
-    ##
-    # Cursor operations
-    #
-    def clone(self, cursor: AgnosticCursor = None) -> "WrappedCursor":
-        return self.__class__(self.model, cursor=cursor or self.cursor.clone())
-
-    def sort(self, *args, **kwargs) -> "WrappedCursor":
-        return self.clone(cursor=self.cursor.sort(*args, **kwargs))
-
-    def skip(self, offset: int) -> "WrappedCursor":
-        return self.clone(cursor=self.cursor.skip(offset))
-
-    def limit(self, limit: int) -> "WrappedCursor":
-        return self.clone(cursor=self.cursor.limit(limit))
+__all__ = ["Model"]
 
 
 class Model:
@@ -186,35 +145,3 @@ class Model:
 
     async def delete_many(self):
         pass
-
-
-async def main():
-    db = AsyncIOMotorClient("mongodb://localhost/")
-
-    users = Model(db["simple-test"], collection_name="users")
-
-    assert await users.read_one("61928821dc8768385af8772a", strict=False) is None
-    assert (
-        await users.read_one({"_id": "61928821dc8768385af8772a"}, strict=False) is None
-    )
-    assert await users.read_one(ObjectId("61928821dc8768385af8772a")) is not None
-    assert (
-        await users.read_one({"_id": ObjectId("61928821dc8768385af8772a")}) is not None
-    )
-
-    b = await users.update_one(
-        {"name": "1235121"}, {"$set": {"name": "1235121"}}, upsert={}
-    )
-    print(b)
-
-    print(await users.read_many())
-    print(await users.collection.count_documents({}))
-    #
-    # async for user in users.read_many():
-    #     print(user)
-    #     print(await users.read_one(user["_id"]))
-    #     print(await users.read_one({"_id": user["_id"]}))
-
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())

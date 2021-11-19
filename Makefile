@@ -1,11 +1,14 @@
 
 install:
-	python -m pip install -r requirements.txt
+	python -m pip install -e .
+
+install-dev:
+	python -m pip install -e .[dev]
 
 black:
-	python -m black main.py
+	python -m black setup.py aiomodel
 
 mypy:
-	python -m mypy main.py
+	python -m mypy setup.py aiomodel
 
 check: black mypy
