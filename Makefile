@@ -12,10 +12,9 @@ mypy:
 	python -m mypy setup.py aiomodels
 
 test:
-	python -m unittest discover
+	python -m coverage run -m unittest discover
 
 cov:
-	python -m coverage run -m unittest discover
 	python -m coverage html
 
-check: black mypy
+check: black mypy test cov
