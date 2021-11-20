@@ -12,7 +12,6 @@ EXTRAS_DEV = [
     "black==21.10b0",
     "mypy==0.910",
     "coverage",
-    "pytest",
 ]
 
 
