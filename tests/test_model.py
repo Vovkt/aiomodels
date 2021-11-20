@@ -29,6 +29,16 @@ class TestModelCreate(BaseTestModel):
         actual = await collection.find_one(doc["_id"])
         self.assertEqual(doc, actual)
 
+    async def test_duplicate_exception(self):
+        model = Model(self.db, collection_name="users")
+        collection = model.collection
+
+        await collection.create_index("name", unique=True)
+
+        await model.create_one({"name": "vovkt"})
+        with self.assertRaises(DuplicateKeyError):  # todo check context
+            await model.create_one({"name": "vovkt"})
+
 
 class TestModelRead(BaseTestModel):
     async def test_read_by_object_id(self):
