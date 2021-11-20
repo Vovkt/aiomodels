@@ -5,7 +5,7 @@ from motor.core import AgnosticDatabase, AgnosticCollection
 from pymongo.errors import DuplicateKeyError
 from pymongo.collection import ReturnDocument
 
-from .types import Document, Projection, RawDocument, Query
+from .base import Document, Projection, RawDocument, Query
 from .cursor import WrappedCursor
 
 

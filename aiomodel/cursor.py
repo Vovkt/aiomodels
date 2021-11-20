@@ -2,7 +2,7 @@ import typing as t
 
 from motor.core import AgnosticCursor
 
-from .types import RawDocument
+from .base import RawDocument
 
 if t.TYPE_CHECKING:
     from .model import Model
