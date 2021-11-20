@@ -73,3 +73,12 @@ class TestModelRead(BaseTestModel):
 
         actual = await model.read_one({"name": "vovkt"})
         self.assertEqual({"_id": _id, "name": "vovkt"}, actual)
+
+
+class TestModelReadMany(BaseTestModel):
+    async def test_default(self):
+        model = Model(self.db, collection_name="users")
+        cursor = model.read_many()
+
+        self.assertIsInstance(cursor, WrappedCursor)
+
