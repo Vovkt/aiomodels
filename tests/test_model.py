@@ -12,6 +12,16 @@ class BaseTestModel(IsolatedAsyncioTestCase):
         self.db = db["test_aiomodel"]
 
 
+class TestModelCreate(BaseTestModel):
+    async def test_default(self):
+        model = Model(self.db, collection_name="users")
+        doc = await model.create_one({"name": "vovkt"})
+
+        collection = model.collection
+        actual = await collection.find_one(doc["_id"])
+        self.assertEqual(doc, actual)
+
+
 class TestModelRead(BaseTestModel):
     async def test_read_by_object_id(self):
         model = Model(self.db, collection_name="users")
