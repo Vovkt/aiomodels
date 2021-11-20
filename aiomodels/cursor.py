@@ -22,7 +22,7 @@ class WrappedCursor:
         return self
 
     async def __anext__(self) -> RawDocument:
-        return await self.model.after_read(await self.cursor.next())
+        return await self.model._after_read(await self.cursor.next())
 
     def __await__(self):
         # todo types?
@@ -31,7 +31,7 @@ class WrappedCursor:
     async def to_list(self, length: int = None) -> t.List[RawDocument]:
         # todo gather?
         return [
-            await self.model.after_read(doc)
+            await self.model._after_read(doc)
             for doc in await self.cursor.to_list(length)
         ]
 

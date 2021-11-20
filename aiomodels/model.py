@@ -29,27 +29,27 @@ class Model:
     ##
     # Create
     #
-    async def before_create(self, document: Document) -> RawDocument:
+    async def _before_create(self, document: Document) -> RawDocument:
         return {
             "_id": self.generate_id(),
             **document,
         }
 
-    async def after_create(self, document: RawDocument) -> Document:
+    async def _after_create(self, document: RawDocument) -> Document:
         return document
 
     async def create_one(self, document: Document) -> Document:
-        doc: RawDocument = await self.before_create(document)
+        doc: RawDocument = await self._before_create(document)
         try:
             await self.collection.insert_one(doc)
         except DuplicateKeyError:
             raise  # todo
-        return await self.after_create(doc)
+        return await self._after_create(doc)
 
     ##
     # Read
     #
-    async def after_read(self, document: RawDocument) -> Document:
+    async def _after_read(self, document: RawDocument) -> Document:
         return document
 
     async def read_one(
@@ -61,7 +61,7 @@ class Model:
     ) -> t.Optional[Document]:  # todo upsert
         doc = await self.collection.find_one(filter=query, projection=projection)
         if doc is not None:
-            return await self.after_read(doc)
+            return await self._after_read(doc)
         elif strict:
             raise Exception("not found")
         return None
@@ -80,12 +80,12 @@ class Model:
     # Update
     #
     # todo examples with before
-    async def before_update(
+    async def _before_update(
         self, query, update: RawDocument, upsert: RawDocument = None, sort=None
     ):
         if upsert is not None:
             document = update.setdefault("$setOnInsert", {})
-            document.update(await self.before_create(upsert))
+            document.update(await self._before_create(upsert))
         return {
             "filter": query,
             "update": update,
@@ -94,12 +94,12 @@ class Model:
             "sort": sort,
         }
 
-    async def after_update(
+    async def _after_update(
         self, document: RawDocument, *, update: dict, upsert: bool, **kwargs
     ) -> Document:
         if upsert and update["$setOnInsert"]["_id"] == document["_id"]:
-            return await self.after_create(document)
-        return await self.after_read(document)
+            return await self._after_create(document)
+        return await self._after_read(document)
 
     async def update_one(
         self,
@@ -112,7 +112,7 @@ class Model:
         strict: bool = True,
     ) -> t.Optional[Document]:
         # todo session
-        kwargs = await self.before_update(
+        kwargs = await self._before_update(
             query=query, update=update, upsert=upsert, sort=sort
         )
 
@@ -125,7 +125,7 @@ class Model:
         # todo pymongo.errors.OperationFailure: Updating the path 'name' would create a conflict at 'name', full error: {'ok': 0.0, 'errmsg': "Updating the path 'name' would create a conflict at 'name'", 'code': 40, 'codeName': 'ConflictingUpdateOperators'}
 
         if doc is not None:
-            return await self.after_update(doc, **kwargs)
+            return await self._after_update(doc, **kwargs)
         elif strict:
             raise Exception("not found")
 
@@ -137,7 +137,10 @@ class Model:
     ##
     # Delete
     #
-    async def after_delete(self, document: RawDocument) -> None:
+    async def _before_delete(self, query: Query) -> None:
+        pass
+
+    async def _after_delete(self, document: RawDocument) -> None:
         pass
 
     async def delete_one(self):
