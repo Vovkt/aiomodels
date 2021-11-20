@@ -1,8 +1,9 @@
 from unittest import IsolatedAsyncioTestCase
 
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from aiomodels.model import Model
+from aiomodels.model import Model, DuplicateKeyError
 
 
 class BaseTestModel(IsolatedAsyncioTestCase):
@@ -10,6 +11,13 @@ class BaseTestModel(IsolatedAsyncioTestCase):
         db = AsyncIOMotorClient("mongodb://localhost/")
         await db.drop_database("test_aiomodels")
         self.db = db["test_aiomodels"]
+
+
+class TestModelGenerateId(BaseTestModel):
+    def test_default(self):
+        model: Model = Model(self.db, collection_name="users")
+        _id = model.generate_id()
+        self.assertIsInstance(_id, ObjectId)
 
 
 class TestModelCreate(BaseTestModel):
