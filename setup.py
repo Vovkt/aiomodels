@@ -2,7 +2,7 @@
 from setuptools import find_packages, setup
 
 
-NAME = "aiomodel"
+NAME = "aiomodels"
 
 DEPENDENCIES = [
     "motor==2.5.1",
@@ -18,7 +18,7 @@ EXTRAS_DEV = [
 setup(
     name=NAME,
     version="0.0.1",
-    url="https://github.com/Vovkt/aiomodel",
+    url="https://github.com/Vovkt/aiomodels",
     description="Mongo async models",
     maintainer="Vladimir Doroshenko",
     maintainer_email="vovktt@gmail.com",

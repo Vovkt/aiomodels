@@ -2,14 +2,14 @@ from unittest import IsolatedAsyncioTestCase
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from aiomodel.model import Model
+from aiomodels.model import Model
 
 
 class BaseTestModel(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         db = AsyncIOMotorClient("mongodb://localhost/")
-        await db.drop_database("test_aiomodel")
-        self.db = db["test_aiomodel"]
+        await db.drop_database("test_aiomodels")
+        self.db = db["test_aiomodels"]
 
 
 class TestModelCreate(BaseTestModel):

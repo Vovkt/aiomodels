@@ -1,1 +1,1 @@
-"""aiomodel tests"""
+"""aiomodels tests"""

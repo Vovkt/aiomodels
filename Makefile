@@ -6,10 +6,10 @@ install-dev:
 	python -m pip install -e .[dev]
 
 black:
-	python -m black setup.py aiomodel tests
+	python -m black setup.py aiomodels tests
 
 mypy:
-	python -m mypy setup.py aiomodel
+	python -m mypy setup.py aiomodels
 
 test:
 	python -m unittest discover
