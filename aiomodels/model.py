@@ -54,7 +54,7 @@ class Model:
 
     async def read_one(
         self,
-        query: t.Union[ObjectId, str, Query],
+        query: t.Union[ObjectId, str, Query] = None,
         projection: Projection = None,
         *,
         strict=True,
