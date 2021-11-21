@@ -81,4 +81,3 @@ class TestModelReadMany(BaseTestModel):
         cursor = model.read_many()
 
         self.assertIsInstance(cursor, WrappedCursor)
-
