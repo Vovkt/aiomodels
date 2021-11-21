@@ -8,6 +8,10 @@ DEPENDENCIES = [
     "motor==2.5.1",
 ]
 
+EXTRAS_PYDANTIC = [
+    "pydantic==1.8.2"
+]
+
 EXTRAS_DEV = [
     "black==21.10b0",
     "mypy==0.910",
@@ -27,7 +31,10 @@ setup(
     zip_safe=True,
     install_requires=DEPENDENCIES,
     extras_require={
-        "dev": EXTRAS_DEV,
+        "pydantic": EXTRAS_PYDANTIC,
+        "dev": (
+            EXTRAS_PYDANTIC + EXTRAS_DEV
+        ),
     },
     classifiers=[
         "Programming Language :: Python :: 3.8",
