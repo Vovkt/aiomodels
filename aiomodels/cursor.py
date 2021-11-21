@@ -4,7 +4,7 @@ from motor.core import AgnosticCursor
 
 from .base import RawDocument
 
-if t.TYPE_CHECKING:
+if t.TYPE_CHECKING:  # pragma: no cover
     from .model import Model
 
 
