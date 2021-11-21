@@ -1,6 +1,6 @@
-from .cursor import WrappedCursor
-from .model import Model
-from . import base as types
+from aiomodels import (
+    core,
+    base as types,
+)
 
-
-__all__ = ["Model", "WrappedCursor", "types"]
+__all__ = ["core", "types"]

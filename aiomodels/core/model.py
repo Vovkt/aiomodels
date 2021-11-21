@@ -6,14 +6,14 @@ from motor.core import AgnosticDatabase, AgnosticCollection
 from pymongo.errors import DuplicateKeyError
 from pymongo.collection import ReturnDocument
 
-from .base import Document, Projection, RawDocument, Query
+from aiomodels.base import Document, Projection, RawDocument, Query
 from .cursor import WrappedCursor
 
 
-__all__ = ["Model"]
+__all__ = ["BaseModel"]
 
 
-class Model:
+class BaseModel:
     db: AgnosticDatabase
     collection_name: str
     collection: AgnosticCollection

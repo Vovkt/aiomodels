@@ -2,10 +2,10 @@ import typing as t
 
 from motor.core import AgnosticCursor
 
-from .base import RawDocument
+from aiomodels.base import RawDocument
 
 if t.TYPE_CHECKING:  # pragma: no cover
-    from .model import Model
+    from .model import BaseModel
 
 
 __all__ = ["WrappedCursor"]
@@ -13,9 +13,9 @@ __all__ = ["WrappedCursor"]
 
 class WrappedCursor:
     def __init__(
-        self, model: "Model", *, cursor: AgnosticCursor = None, **kwargs
+        self, model: "BaseModel", *, cursor: AgnosticCursor = None, **kwargs
     ) -> None:
-        self.model: "Model" = model
+        self.model: "BaseModel" = model
         self.cursor: AgnosticCursor = cursor or self.model.collection.find(**kwargs)
 
     def __aiter__(self) -> "WrappedCursor":

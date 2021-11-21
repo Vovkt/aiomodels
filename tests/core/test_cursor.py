@@ -1,11 +1,11 @@
-from aiomodels import Model
+from aiomodels.core import BaseModel
 from aiomodels.testing import BaseTestModel
 
 
 class TestCursorWrapper(BaseTestModel):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.model = Model(self.db, collection_name="users")
+        self.model = BaseModel(self.db, collection_name="users")
 
     async def test_await(self):
         user_1 = await self.model.create_one({"name": "Vovkt"})

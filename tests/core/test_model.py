@@ -2,20 +2,20 @@ from bson import ObjectId
 
 from pymongo.errors import DuplicateKeyError
 
-from aiomodels import WrappedCursor, Model
+from aiomodels.core import WrappedCursor, BaseModel
 from aiomodels.testing import BaseTestModel
 
 
 class TestModelGenerateId(BaseTestModel):
     def test_default(self):
-        model: Model = Model(self.db, collection_name="users")
+        model: BaseModel = BaseModel(self.db, collection_name="users")
         _id = model.generate_id()
         self.assertIsInstance(_id, ObjectId)
 
 
 class TestModelCreate(BaseTestModel):
     async def test_default(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         doc = await model.create_one({"name": "Vovkt"})
 
         collection = model.collection
@@ -23,7 +23,7 @@ class TestModelCreate(BaseTestModel):
         self.assertEqual(doc, actual)
 
     async def test_duplicate_exception(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         collection = model.collection
 
         await collection.create_index("name", unique=True)
@@ -35,7 +35,7 @@ class TestModelCreate(BaseTestModel):
 
 class TestModelRead(BaseTestModel):
     async def test_empty(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
@@ -43,7 +43,7 @@ class TestModelRead(BaseTestModel):
         self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
     async def test_by_object_id(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
@@ -51,7 +51,7 @@ class TestModelRead(BaseTestModel):
         self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
     async def test_by_string_instead_object_id(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
@@ -59,7 +59,7 @@ class TestModelRead(BaseTestModel):
         self.assertIsNone(actual)
 
     async def test_by_query_by_object_id(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
@@ -67,7 +67,7 @@ class TestModelRead(BaseTestModel):
         self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
     async def test_by_query_by_string(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
@@ -75,7 +75,7 @@ class TestModelRead(BaseTestModel):
         self.assertIsNone(actual)
 
     async def test_by_field(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
@@ -83,7 +83,7 @@ class TestModelRead(BaseTestModel):
         self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
     async def test_not_found(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
 
         with self.assertRaises(Exception):  # todo
             await model.read_one({})
@@ -91,7 +91,7 @@ class TestModelRead(BaseTestModel):
 
 class TestModelReadMany(BaseTestModel):
     async def test_default(self):
-        model = Model(self.db, collection_name="users")
+        model = BaseModel(self.db, collection_name="users")
         cursor = model.read_many()
 
         self.assertIsInstance(cursor, WrappedCursor)
