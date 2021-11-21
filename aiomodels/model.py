@@ -137,14 +137,24 @@ class Model:
     ##
     # Delete
     #
-    async def _before_delete(self, query: Query) -> None:
-        pass
+    async def _before_delete(self, query: Query) -> Query:
+        return query
 
-    async def _after_delete(self, document: RawDocument) -> None:
-        pass
+    async def _after_delete(self, document: RawDocument) -> Document:
+        return document
 
-    async def delete_one(self):
-        pass
+    async def delete_one(self, query: Query, *, sort=None, strict: bool = True) -> t.Optional[Document]:
+        query = await self._before_delete(query)
+        doc = await self.collection.find_one_and_delete(query, sort=sort)
+        if doc is not None:
+            return await self._after_delete(doc)
+        elif strict:
+            raise Exception("not found")
+        return None
 
-    async def delete_many(self):
-        pass
+    async def delete_many(self, query: Query) -> int:
+        count = 0
+        async for doc in self.read_many(query):  # todo projection?
+            count += 1
+            await self.delete_one({"_id": doc["_id"]})
+        return count
