@@ -6,14 +6,17 @@ from motor.core import AgnosticDatabase, AgnosticCollection
 from pymongo.errors import DuplicateKeyError
 from pymongo.collection import ReturnDocument
 
-from aiomodels.base import Document, Projection, RawDocument, Query
-from .cursor import WrappedCursor
+from aiomodels.base import Projection, Query
+from aiomodels.core.cursor import WrappedCursor
 
 
 __all__ = ["BaseModel"]
 
 
-class BaseModel:
+T = t.TypeVar("T", bound=dict)
+
+
+class BaseModel(t.Generic[T]):
     db: AgnosticDatabase
     collection_name: str
     collection: AgnosticCollection
@@ -30,17 +33,17 @@ class BaseModel:
     ##
     # Create
     #
-    async def _before_create(self, document: Document) -> RawDocument:
+    async def _before_create(self, document: T) -> dict:
         return {
             "_id": self.generate_id(),
             **document,
         }
 
-    async def _after_create(self, document: RawDocument) -> Document:
-        return document
+    async def _after_create(self, document: dict) -> T:
+        return t.cast(T, document)
 
-    async def create_one(self, document: Document) -> Document:
-        doc: RawDocument = await self._before_create(document)
+    async def create_one(self, document: T) -> T:
+        doc: dict = await self._before_create(document)
         try:
             await self.collection.insert_one(doc)
         except DuplicateKeyError:
@@ -50,8 +53,8 @@ class BaseModel:
     ##
     # Read
     #
-    async def _after_read(self, document: RawDocument) -> Document:
-        return document
+    async def _after_read(self, document: dict) -> T:
+        return t.cast(T, document)
 
     async def read_one(
         self,
@@ -59,7 +62,7 @@ class BaseModel:
         projection: Projection = None,
         *,
         strict=True,
-    ) -> t.Optional[Document]:  # todo upsert
+    ) -> t.Optional[T]:  # todo upsert
         doc = await self.collection.find_one(filter=query, projection=projection)
         if doc is not None:
             return await self._after_read(doc)
@@ -81,12 +84,10 @@ class BaseModel:
     # Update
     #
     # todo examples with before
-    async def _before_update(
-        self, query, update: RawDocument, upsert: RawDocument = None, sort=None
-    ):
+    async def _before_update(self, query, update: dict, upsert: dict = None, sort=None):
         if upsert is not None:
-            document = update.setdefault("$setOnInsert", {})
-            document.update(await self._before_create(upsert))
+            document: dict = update.setdefault("$setOnInsert", {})
+            document.setdefault("_id", self.generate_id())
         return {
             "filter": query,
             "update": update,
@@ -96,8 +97,8 @@ class BaseModel:
         }
 
     async def _after_update(
-        self, document: RawDocument, *, update: dict, upsert: bool, **kwargs
-    ) -> Document:
+        self, document: dict, *, update: dict, upsert: bool, **kwargs
+    ) -> T:
         if upsert and update["$setOnInsert"]["_id"] == document["_id"]:
             return await self._after_create(document)
         return await self._after_read(document)
@@ -105,13 +106,13 @@ class BaseModel:
     async def update_one(
         self,
         query: Query,
-        update: RawDocument,
+        update: dict,
         *,
         sort=None,
-        upsert: RawDocument = None,
+        upsert: dict = None,
         projection: Projection = None,
         strict: bool = True,
-    ) -> t.Optional[Document]:
+    ) -> t.Optional[T]:
         # todo session
         kwargs = await self._before_update(
             query=query, update=update, upsert=upsert, sort=sort
@@ -132,7 +133,7 @@ class BaseModel:
 
         return None
 
-    async def update_many(self, query: Document, update: Document) -> int:
+    async def update_many(self, query: T, update: dict) -> int:
         aws = []
         async for doc in self.read_many(query):  # todo projection
             aws.append(self.update_one({"_id": doc["_id"]}, update))
@@ -145,12 +146,12 @@ class BaseModel:
     async def _before_delete(self, query: Query) -> Query:
         return query
 
-    async def _after_delete(self, document: RawDocument) -> Document:
-        return document
+    async def _after_delete(self, document: dict) -> T:
+        return t.cast(T, document)
 
     async def delete_one(
         self, query: Query, *, sort=None, strict: bool = True
-    ) -> t.Optional[Document]:
+    ) -> t.Optional[T]:
         query = await self._before_delete(query)
         doc = await self.collection.find_one_and_delete(query, sort=sort)
         if doc is not None:
