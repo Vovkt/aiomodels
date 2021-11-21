@@ -115,3 +115,28 @@ class TestCursorWrapper(BaseTestModel):
 
         result = await cursor.to_list()
         self.assertEqual(result, [])
+
+    async def test_sort_args(self):
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
+
+        result = await self.model.read_many().sort("_id", -1)
+        self.assertEqual(result, [user_3, user_2, user_1])
+
+    async def test_sort_with_array(self):
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
+
+        result = await self.model.read_many().sort([("_id", -1)])
+        self.assertEqual(result, [user_3, user_2, user_1])
+
+    async def test_sort_two_fields(self):
+        user_1 = await self.model.create_one({"name": "aaa", "level": 2})
+        user_2 = await self.model.create_one({"name": "bbb", "level": 2})
+        user_3 = await self.model.create_one({"name": "ccc", "level": 1})
+
+        result = await self.model.read_many().sort([("level", -1), ("name", -1)])
+
+        self.assertEqual(result, [user_2, user_1, user_3])
