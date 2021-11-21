@@ -148,7 +148,9 @@ class Model:
     async def _after_delete(self, document: RawDocument) -> Document:
         return document
 
-    async def delete_one(self, query: Query, *, sort=None, strict: bool = True) -> t.Optional[Document]:
+    async def delete_one(
+        self, query: Query, *, sort=None, strict: bool = True
+    ) -> t.Optional[Document]:
         query = await self._before_delete(query)
         doc = await self.collection.find_one_and_delete(query, sort=sort)
         if doc is not None:
@@ -158,8 +160,9 @@ class Model:
         return None
 
     async def delete_many(self, query: Query) -> int:
-        count = 0
+        aws = []
         async for doc in self.read_many(query):  # todo projection?
-            count += 1
-            await self.delete_one({"_id": doc["_id"]})
-        return count
+            aws.append(self.delete_one({"_id": doc["_id"]}))
+
+        result = await asyncio.gather(*aws)
+        return len(result)
