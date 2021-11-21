@@ -1,3 +1,4 @@
+import asyncio
 import typing as t
 
 from bson import ObjectId
@@ -131,8 +132,12 @@ class Model:
 
         return None
 
-    async def update_many(self):
-        pass
+    async def update_many(self, query: Document, update: Document) -> int:
+        aws = []
+        async for doc in self.read_many(query):  # todo projection
+            aws.append(self.update_one({"_id": doc["_id"]}, update))
+        result = await asyncio.gather(*aws)
+        return len(result)
 
     ##
     # Delete
