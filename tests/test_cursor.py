@@ -140,3 +140,43 @@ class TestCursorWrapper(BaseTestModel):
         result = await self.model.read_many().sort([("level", -1), ("name", -1)])
 
         self.assertEqual(result, [user_2, user_1, user_3])
+
+    async def test_limit(self):
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
+
+        self.assertEqual(await self.model.read_many().limit(1), [user_1])
+
+        self.assertEqual(
+            await self.model.read_many().limit(100),
+            [
+                user_1,
+                user_2,
+                user_3,
+            ],
+        )
+
+    async def test_skip(self):
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
+
+        self.assertEqual(
+            await self.model.read_many().skip(0),
+            [
+                user_1,
+                user_2,
+                user_3,
+            ],
+        )
+
+        self.assertEqual(
+            await self.model.read_many().skip(1),
+            [
+                user_2,
+                user_3,
+            ],
+        )
+
+        self.assertEqual(await self.model.read_many().skip(100), [])
