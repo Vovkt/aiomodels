@@ -8,9 +8,9 @@ class TestCursorWrapper(BaseTestModel):
         self.model = Model(self.db, collection_name="users")
 
     async def test_await(self):
-        user_1 = await self.model.create_one({"name": "vovkt"})
-        user_2 = await self.model.create_one({"name": "natasyan"})
-        user_3 = await self.model.create_one({"name": "mini"})
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
 
         cursor = self.model.read_many()
 
@@ -24,9 +24,9 @@ class TestCursorWrapper(BaseTestModel):
         )
 
     async def test_iterator(self):
-        user_1 = await self.model.create_one({"name": "vovkt"})
-        user_2 = await self.model.create_one({"name": "natasyan"})
-        user_3 = await self.model.create_one({"name": "mini"})
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
 
         cursor = self.model.read_many()
 
@@ -42,9 +42,9 @@ class TestCursorWrapper(BaseTestModel):
         )
 
     async def test_to_list_default(self):
-        user_1 = await self.model.create_one({"name": "vovkt"})
-        user_2 = await self.model.create_one({"name": "natasyan"})
-        user_3 = await self.model.create_one({"name": "mini"})
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
 
         cursor = self.model.read_many()
 
@@ -60,9 +60,9 @@ class TestCursorWrapper(BaseTestModel):
         )
 
     async def test_to_list_with_none(self):
-        user_1 = await self.model.create_one({"name": "vovkt"})
-        user_2 = await self.model.create_one({"name": "natasyan"})
-        user_3 = await self.model.create_one({"name": "mini"})
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
 
         cursor = self.model.read_many()
 
@@ -78,10 +78,10 @@ class TestCursorWrapper(BaseTestModel):
         )
 
     async def test_to_list_with_length(self):
-        user_1 = await self.model.create_one({"name": "vovkt"})
-        user_2 = await self.model.create_one({"name": "natasyan"})
-        user_3 = await self.model.create_one({"name": "mini"})
-        user_4 = await self.model.create_one({"name": "anon"})
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        user_2 = await self.model.create_one({"name": "Natasyan"})
+        user_3 = await self.model.create_one({"name": "Mini"})
+        user_4 = await self.model.create_one({"name": "Anon"})
 
         cursor = self.model.read_many()
 

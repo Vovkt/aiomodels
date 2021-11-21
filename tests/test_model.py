@@ -16,7 +16,7 @@ class TestModelGenerateId(BaseTestModel):
 class TestModelCreate(BaseTestModel):
     async def test_default(self):
         model = Model(self.db, collection_name="users")
-        doc = await model.create_one({"name": "vovkt"})
+        doc = await model.create_one({"name": "Vovkt"})
 
         collection = model.collection
         actual = await collection.find_one(doc["_id"])
@@ -28,23 +28,23 @@ class TestModelCreate(BaseTestModel):
 
         await collection.create_index("name", unique=True)
 
-        await model.create_one({"name": "vovkt"})
+        await model.create_one({"name": "Vovkt"})
         with self.assertRaises(DuplicateKeyError):  # todo check context
-            await model.create_one({"name": "vovkt"})
+            await model.create_one({"name": "Vovkt"})
 
 
 class TestModelRead(BaseTestModel):
     async def test_read_by_object_id(self):
         model = Model(self.db, collection_name="users")
-        result = await model.collection.insert_one({"name": "vovkt"})
+        result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
         actual = await model.read_one(_id)
-        self.assertEqual({"_id": _id, "name": "vovkt"}, actual)
+        self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
     async def test_read_by_string_instead_object_id(self):
         model = Model(self.db, collection_name="users")
-        result = await model.collection.insert_one({"name": "vovkt"})
+        result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
         actual = await model.read_one(str(_id), strict=False)
@@ -52,15 +52,15 @@ class TestModelRead(BaseTestModel):
 
     async def test_read_by_query_by_object_id(self):
         model = Model(self.db, collection_name="users")
-        result = await model.collection.insert_one({"name": "vovkt"})
+        result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
         actual = await model.read_one({"_id": _id})
-        self.assertEqual({"_id": _id, "name": "vovkt"}, actual)
+        self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
     async def test_read_by_query_by_string(self):
         model = Model(self.db, collection_name="users")
-        result = await model.collection.insert_one({"name": "vovkt"})
+        result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
         actual = await model.read_one({"_id": str(_id)}, strict=False)
@@ -68,11 +68,11 @@ class TestModelRead(BaseTestModel):
 
     async def test_read_by_field(self):
         model = Model(self.db, collection_name="users")
-        result = await model.collection.insert_one({"name": "vovkt"})
+        result = await model.collection.insert_one({"name": "Vovkt"})
         _id = result.inserted_id
 
-        actual = await model.read_one({"name": "vovkt"})
-        self.assertEqual({"_id": _id, "name": "vovkt"}, actual)
+        actual = await model.read_one({"name": "Vovkt"})
+        self.assertEqual({"_id": _id, "name": "Vovkt"}, actual)
 
 
 class TestModelReadMany(BaseTestModel):
