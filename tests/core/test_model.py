@@ -95,3 +95,23 @@ class TestModelReadMany(BaseTestModel):
         cursor = model.read_many()
 
         self.assertIsInstance(cursor, WrappedCursor)
+
+
+class TestModelUpdate(BaseTestModel):
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        self.model = BaseModel(self.db, collection_name="users")
+
+    async def test_default(self):
+        user_1 = await self.model.create_one({"name": "Vovkt"})
+        actual = await self.model.update_one(
+            {"_id": user_1["_id"]}, {"$set": {"name": "Vladimir"}}
+        )
+
+        self.assertEqual(
+            {
+                "_id": user_1["_id"],
+                "name": "Vladimir",
+            },
+            actual,
+        )
