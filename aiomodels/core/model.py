@@ -13,10 +13,11 @@ from aiomodels.core.cursor import WrappedCursor
 __all__ = ["BaseModel"]
 
 
-T = t.TypeVar("T", bound=dict)
+T = t.TypeVar("T")
+P = t.TypeVar("P")
 
 
-class BaseModel(t.Generic[T]):
+class BaseModel(t.Generic[T, P]):
     db: AgnosticDatabase
     collection_name: str
     collection: AgnosticCollection
@@ -27,7 +28,7 @@ class BaseModel(t.Generic[T]):
         self.collection = db[self.collection_name]
 
     @staticmethod
-    def generate_id():
+    def generate_id() -> P:
         return ObjectId()
 
     ##
@@ -36,7 +37,7 @@ class BaseModel(t.Generic[T]):
     async def _before_create(self, document: T) -> dict:
         return {
             "_id": self.generate_id(),
-            **document,
+            **t.cast(dict, document),
         }
 
     async def _after_create(self, document: dict) -> T:
@@ -134,9 +135,10 @@ class BaseModel(t.Generic[T]):
         return None
 
     async def update_many(self, query: T, update: dict) -> int:
-        aws = []
-        async for doc in self.read_many(query):  # todo projection
-            aws.append(self.update_one({"_id": doc["_id"]}, update))
+        aws = [  # todo projection
+            self.update_one({"_id": doc["_id"]}, update)
+            async for doc in self.read_many(t.cast(dict, query))
+        ]
         result = await asyncio.gather(*aws)
         return len(result)
 
@@ -161,9 +163,8 @@ class BaseModel(t.Generic[T]):
         return None
 
     async def delete_many(self, query: Query) -> int:
-        aws = []
-        async for doc in self.read_many(query):  # todo projection?
-            aws.append(self.delete_one({"_id": doc["_id"]}))
-
+        aws = [  # todo projection?
+            self.delete_one({"_id": doc["_id"]}) async for doc in self.read_many(query)
+        ]
         result = await asyncio.gather(*aws)
         return len(result)
