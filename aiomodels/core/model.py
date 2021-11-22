@@ -34,22 +34,21 @@ class BaseModel(t.Generic[T, P]):
     ##
     # Create
     #
-    async def _before_create(self, document: T) -> dict:
-        return {
-            "_id": self.generate_id(),
-            **t.cast(dict, document),
-        }
+    async def _before_create(self, new: T) -> dict:
+        document = t.cast(dict, new)
+        document.setdefault("_id", self.generate_id())
+        return document
 
     async def _after_create(self, document: dict) -> T:
         return t.cast(T, document)
 
-    async def create_one(self, document: T) -> T:
-        doc: dict = await self._before_create(document)
+    async def create_one(self, new: T) -> T:
+        document: dict = await self._before_create(new)
         try:
-            await self.collection.insert_one(doc)
+            await self.collection.insert_one(document)
         except DuplicateKeyError:
             raise  # todo
-        return await self._after_create(doc)
+        return await self._after_create(document)
 
     ##
     # Read
@@ -60,9 +59,9 @@ class BaseModel(t.Generic[T, P]):
     async def read_one(
         self,
         query: t.Union[ObjectId, str, Query] = None,
-        projection: Projection = None,
         *,
-        strict=True,
+        projection: Projection = None,
+        strict: bool = True,
     ) -> t.Optional[T]:  # todo upsert
         doc = await self.collection.find_one(filter=query, projection=projection)
         if doc is not None:
@@ -85,7 +84,9 @@ class BaseModel(t.Generic[T, P]):
     # Update
     #
     # todo examples with before
-    async def _before_update(self, query, update: dict, upsert: dict = None, sort=None):
+    async def _before_update(
+        self, query: Query, update: dict, upsert: dict = None, sort=None
+    ):
         if upsert is not None:
             document: dict = update.setdefault("$setOnInsert", {})
             document.setdefault("_id", self.generate_id())
@@ -93,7 +94,7 @@ class BaseModel(t.Generic[T, P]):
             "filter": query,
             "update": update,
             "return_document": ReturnDocument.AFTER,
-            "upsert": upsert is not None,
+            "upsert": "$setOnInsert" in update,
             "sort": sort,
         }
 
@@ -101,8 +102,8 @@ class BaseModel(t.Generic[T, P]):
         self, document: dict, *, update: dict, upsert: bool, **kwargs
     ) -> T:
         if upsert and update["$setOnInsert"]["_id"] == document["_id"]:
-            return await self._after_create(document)
-        return await self._after_read(document)
+            return t.cast(T, document)
+        return t.cast(T, document)
 
     async def update_one(
         self,
@@ -120,24 +121,24 @@ class BaseModel(t.Generic[T, P]):
         )
 
         try:
-            doc = await self.collection.find_one_and_update(
+            document = await self.collection.find_one_and_update(
                 **kwargs, projection=projection
             )
         except DuplicateKeyError:
             raise  # todo
         # todo pymongo.errors.OperationFailure: Updating the path 'name' would create a conflict at 'name', full error: {'ok': 0.0, 'errmsg': "Updating the path 'name' would create a conflict at 'name'", 'code': 40, 'codeName': 'ConflictingUpdateOperators'}
 
-        if doc is not None:
-            return await self._after_update(doc, **kwargs)
+        if document is not None:
+            return await self._after_update(document, **kwargs)
         elif strict:
             raise Exception("not found")
 
         return None
 
-    async def update_many(self, query: T, update: dict) -> int:
-        aws = [  # todo projection
+    async def update_many(self, query: Query, update: dict) -> int:
+        aws = [
             self.update_one({"_id": doc["_id"]}, update)
-            async for doc in self.read_many(t.cast(dict, query))
+            async for doc in self.read_many(filter=query, projection={"_id": True})
         ]
         result = await asyncio.gather(*aws)
         return len(result)
@@ -152,19 +153,28 @@ class BaseModel(t.Generic[T, P]):
         return t.cast(T, document)
 
     async def delete_one(
-        self, query: Query, *, sort=None, strict: bool = True
+        self,
+        query: Query,
+        *,
+        sort=None,
+        projection: Projection = None,
+        strict: bool = True,
     ) -> t.Optional[T]:
         query = await self._before_delete(query)
-        doc = await self.collection.find_one_and_delete(query, sort=sort)
-        if doc is not None:
-            return await self._after_delete(doc)
+        document = await self.collection.find_one_and_delete(
+            query, sort=sort, projection=projection
+        )
+        if document is not None:
+            return await self._after_delete(document)
         elif strict:
             raise Exception("not found")
         return None
 
-    async def delete_many(self, query: Query) -> int:
-        aws = [  # todo projection?
-            self.delete_one({"_id": doc["_id"]}) async for doc in self.read_many(query)
+    async def delete_many(
+        self, query: Query, *, projection: Projection = None
+    ) -> t.List[T]:
+        aws = [
+            self.delete_one({"_id": doc["_id"]}, projection=projection)
+            async for doc in self.read_many(query, projection={"_id": True})
         ]
-        result = await asyncio.gather(*aws)
-        return len(result)
+        return await asyncio.gather(*aws)
