@@ -88,7 +88,7 @@ class BaseModel(t.Generic[T, P]):
         self, query: Query, update: dict, upsert: dict = None, sort=None
     ):
         if upsert is not None:
-            document: dict = update.setdefault("$setOnInsert", {})
+            document: dict = update.setdefault("$setOnInsert", upsert)
             document.setdefault("_id", self.generate_id())
         return {
             "filter": query,
@@ -101,8 +101,6 @@ class BaseModel(t.Generic[T, P]):
     async def _after_update(
         self, document: dict, *, update: dict, upsert: bool, **kwargs
     ) -> T:
-        if upsert and update["$setOnInsert"]["_id"] == document["_id"]:
-            return t.cast(T, document)
         return t.cast(T, document)
 
     async def update_one(
@@ -112,6 +110,7 @@ class BaseModel(t.Generic[T, P]):
         *,
         sort=None,
         upsert: dict = None,
+        session=None,
         projection: Projection = None,
         strict: bool = True,
     ) -> t.Optional[T]:
@@ -122,7 +121,9 @@ class BaseModel(t.Generic[T, P]):
 
         try:
             document = await self.collection.find_one_and_update(
-                **kwargs, projection=projection
+                **kwargs,
+                projection=projection,
+                session=session,
             )
         except DuplicateKeyError:
             raise  # todo

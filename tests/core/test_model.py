@@ -115,3 +115,27 @@ class TestModelUpdate(BaseTestModel):
             },
             actual,
         )
+
+    async def test_upsert_new(self):
+        user_1 = await self.model.update_one(
+            {"name": "Vovkt"}, {"$set": {"name": "Natasyan"}}, upsert={}
+        )
+        actual = await self.model.read_one({"_id": user_1["_id"]})
+
+        self.assertEqual(user_1, actual)
+
+    async def test_upsert_new_with_id(self):
+        _id = ObjectId()
+        user_1 = await self.model.update_one(
+            {"name": "Vovkt"},
+            {"$set": {"name": "Natasyan"}},
+            upsert={
+                "_id": _id,
+            },
+        )
+        actual = await self.model.read_one({"_id": _id})
+
+        self.assertEqual(
+            user_1,
+            actual,
+        )
