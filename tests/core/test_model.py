@@ -139,3 +139,21 @@ class TestModelUpdate(BaseTestModel):
             user_1,
             actual,
         )
+
+    async def test_upsert_duplicate_exception(self):
+        _id = ObjectId()
+        await self.model.update_one(
+            {"name": "Vovkt"},
+            {"$set": {"name": "Natasyan"}},
+            upsert={
+                "_id": _id,
+            }
+        )
+        with self.assertRaises(DuplicateKeyError) as context:  # todo check context
+            await self.model.update_one(
+                {"name": "Vovkt"},
+                {"$set": {"name": "Natasyan"}},
+                upsert={
+                    "_id": _id,
+                }
+            )
