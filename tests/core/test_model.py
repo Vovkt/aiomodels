@@ -163,3 +163,12 @@ class TestModelUpdate(BaseTestModel):
             await self.model.update_one(
                 {"name": "Vovkt"}, {"$set": {"name": "Natasyan"}}
             )
+
+    async def test_update_not_found(self):
+        result = await self.model.update_one(
+            {"name": "Vovkt"},
+            {"$set": {"name": "Natasyan"}},
+            strict=False,
+        )
+
+        self.assertIsNone(result)
