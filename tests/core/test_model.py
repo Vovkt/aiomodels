@@ -172,3 +172,34 @@ class TestModelUpdate(BaseTestModel):
         )
 
         self.assertIsNone(result)
+
+
+class TestModelUpdateMany(BaseTestModel):
+    async def test_default(self):
+        model = BaseModel(self.db, collection_name="user")
+
+        user1 = await model.create_one({"name": "aaa", "level": 1})
+        user2 = await model.create_one({"name": "bbb", "level": 1})
+        user3 = await model.create_one({"name": "ccc", "level": 2})
+
+        count = await model.update_many({"level": 1}, {"$inc": {"level": 1}})
+
+        self.assertEqual(count, 2)
+
+        self.assertEqual(
+            await model.read_many(),
+            [
+                {
+                    **user1,
+                    "level": 2,
+                },
+                {
+                    **user2,
+                    "level": 2,
+                },
+                {
+                    **user3,
+                    "level": 2,
+                },
+            ],
+        )

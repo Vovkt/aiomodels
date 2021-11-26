@@ -138,8 +138,8 @@ class BaseModel(t.Generic[T, P]):
 
     async def update_many(self, query: Query, update: dict) -> int:
         aws = [
-            self.update_one({"_id": doc["_id"]}, update)
-            async for doc in self.read_many(filter=query, projection={"_id": True})
+            self.update_one(query={"_id": doc["_id"]}, update=update)
+            async for doc in self.read_many(query=query, projection={"_id": True})
         ]
         result = await asyncio.gather(*aws)
         return len(result)
