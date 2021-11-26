@@ -163,7 +163,7 @@ class BaseModel(t.Generic[T, P]):
     ) -> t.Optional[T]:
         query = await self._before_delete(query)
         document = await self.collection.find_one_and_delete(
-            query, sort=sort, projection=projection
+            filter=query, sort=sort, projection=projection
         )
         if document is not None:
             return await self._after_delete(document)
@@ -171,11 +171,9 @@ class BaseModel(t.Generic[T, P]):
             raise Exception("not found")
         return None
 
-    async def delete_many(
-        self, query: Query, *, projection: Projection = None
-    ) -> t.List[T]:
+    async def delete_many(self, query: Query) -> int:
         aws = [
-            self.delete_one({"_id": doc["_id"]}, projection=projection)
+            self.delete_one({"_id": doc["_id"]}, projection={"_id": True})
             async for doc in self.read_many(query, projection={"_id": True})
         ]
-        return await asyncio.gather(*aws)
+        return len(await asyncio.gather(*aws))

@@ -175,19 +175,21 @@ class TestModelUpdate(BaseTestModel):
 
 
 class TestModelUpdateMany(BaseTestModel):
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        self.model = BaseModel(self.db, collection_name="users")
+
     async def test_default(self):
-        model = BaseModel(self.db, collection_name="user")
+        user1 = await self.model.create_one({"name": "aaa", "level": 1})
+        user2 = await self.model.create_one({"name": "bbb", "level": 1})
+        user3 = await self.model.create_one({"name": "ccc", "level": 2})
 
-        user1 = await model.create_one({"name": "aaa", "level": 1})
-        user2 = await model.create_one({"name": "bbb", "level": 1})
-        user3 = await model.create_one({"name": "ccc", "level": 2})
-
-        count = await model.update_many({"level": 1}, {"$inc": {"level": 1}})
+        count = await self.model.update_many({"level": 1}, {"$inc": {"level": 1}})
 
         self.assertEqual(count, 2)
 
         self.assertEqual(
-            await model.read_many(),
+            await self.model.read_many(),
             [
                 {
                     **user1,
@@ -197,6 +199,59 @@ class TestModelUpdateMany(BaseTestModel):
                     **user2,
                     "level": 2,
                 },
+                {
+                    **user3,
+                    "level": 2,
+                },
+            ],
+        )
+
+    async def test_none(self):
+        count = await self.model.update_many({}, {"$set": {"name": "Vovkt"}})
+        self.assertEqual(0, count)
+
+
+class TestModelDeleteOne(BaseTestModel):
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        self.model = BaseModel(self.db, collection_name="users")
+
+    async def test_by_id(self):
+        user1 = await self.model.create_one({"name": "Vovkt"})
+
+        actual = await self.model.read_one(user1["_id"])
+        self.assertEqual(actual, user1)
+
+        actual = await self.model.delete_one({"_id": user1["_id"]})
+        self.assertEqual(user1, actual)
+
+        actual = await self.model.read_one(user1["_id"], strict=False)
+        self.assertIsNone(actual)
+
+    async def test_strict(self):
+        with self.assertRaises(Exception) as context:  # todo
+            await self.model.delete_one({"_id": "any"})
+
+    async def test_optional(self):
+        actual = await self.model.delete_one({"_id": "any"}, strict=False)
+        self.assertEqual(None, actual)
+
+
+class TestModelDeleteMany(BaseTestModel):
+    async def test_default(self):
+        model = BaseModel(self.db, collection_name="user")
+
+        await model.create_one({"name": "aaa", "level": 1})
+        await model.create_one({"name": "bbb", "level": 1})
+        user3 = await model.create_one({"name": "ccc", "level": 2})
+
+        count = await model.delete_many({"level": 1})
+
+        self.assertEqual(count, 2)
+
+        self.assertEqual(
+            await model.read_many(),
+            [
                 {
                     **user3,
                     "level": 2,
