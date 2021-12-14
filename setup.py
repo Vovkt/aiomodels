@@ -19,7 +19,7 @@ EXTRAS_DEV = [
 
 setup(
     name=NAME,
-    version="0.0.1",
+    version="0.0.1a",
     url="https://github.com/Vovkt/aiomodels",
     description="Mongo async models",
     maintainer="Vladimir Doroshenko",
