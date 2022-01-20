@@ -19,7 +19,7 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        make dev-install
+        make install-dev
     - name: Black
       run: |
         make black-check
