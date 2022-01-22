@@ -41,7 +41,7 @@ class TestModel(TestCase):
         actual = Model1.__model__.schema()
         expected = {
             **Schema1.schema(),
-            'title': "Model1",
+            "title": "Model1",
         }
 
         self.assertEqual(actual, expected)

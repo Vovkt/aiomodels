@@ -11,6 +11,7 @@ class ModelMetaclass(type):
         pydantic_fields["__annotations__"] = mcs.get_annotations_for_pydantic(attrs)
         mcs.create_model(name, bases, attrs, pydantic_fields)
 
+        attrs['__instance__'] = None
         cls = super().__new__(mcs, name, bases, attrs)
 
         return cls
@@ -74,7 +75,7 @@ class ModelMetaclass(type):
 class Model(metaclass=ModelMetaclass):
     __model__: t.ClassVar[t.Type[pydantic.main.BaseModel]] = pydantic.main.BaseModel
     """Data storage schema"""
-    __instance__: pydantic.main.BaseModel = None
+    __instance__: pydantic.main.BaseModel
     """Data storage"""
 
     id: str = pydantic.Field(default=None, alias="_id")
