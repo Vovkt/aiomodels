@@ -37,7 +37,7 @@ class ModelMetaclass(type):
                 result[name] = attrs.pop(name)
             elif hasattr(value, pydantic.class_validators.VALIDATOR_CONFIG_KEY):
                 result[name] = attrs.pop(name)
-            elif name == 'Config':
+            elif name == "Config":
                 result[name] = attrs.pop(name)
             elif name.startswith("__") or callable(value):
                 continue
@@ -85,8 +85,8 @@ class Model(metaclass=ModelMetaclass):
     class Config:
         validate_assignment = True
 
-    def __init__(self, *args, **kwargs) -> None:
-        self.__instance__ = self.__model__(*args, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        self.__instance__ = self.__model__(**kwargs)
 
     def __str__(self) -> str:
         return str(self.__instance__)

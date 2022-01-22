@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from pydantic import validator, root_validator, Field, BaseModel, ValidationError
 
 from aiomodels.pydantic.model import Model
@@ -67,7 +68,7 @@ class TestModel(TestCase):
             val: int
 
         with self.assertRaises(ValidationError):
-            a = ModelS(val="s")
+            ModelS(val="s")
 
         b = ModelS(val=1)
         with self.assertRaises(ValidationError):
