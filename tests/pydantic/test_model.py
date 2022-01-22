@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pydantic import validator, root_validator, Field, BaseModel
+from pydantic import validator, root_validator, Field, BaseModel, ValidationError
 
 from aiomodels.pydantic.model import Model
 
@@ -61,3 +61,14 @@ class TestModel(TestCase):
         user1 = ModelEq(name="Vovkt")
         user2 = ModelEq(name="Natasyna")
         self.assertNotEqual(user1, user2)
+
+    def test_validation(self):
+        class ModelS(Model):
+            val: int
+
+        with self.assertRaises(ValidationError):
+            a = ModelS(val="s")
+
+        b = ModelS(val=1)
+        with self.assertRaises(ValidationError):
+            b.val = "s"

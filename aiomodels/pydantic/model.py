@@ -37,6 +37,8 @@ class ModelMetaclass(type):
                 result[name] = attrs.pop(name)
             elif hasattr(value, pydantic.class_validators.VALIDATOR_CONFIG_KEY):
                 result[name] = attrs.pop(name)
+            elif name == 'Config':
+                result[name] = attrs.pop(name)
             elif name.startswith("__") or callable(value):
                 continue
             else:
@@ -81,7 +83,7 @@ class Model(metaclass=ModelMetaclass):
     id: str = pydantic.Field(default=None, alias="_id")
 
     class Config:
-        allow_population_by_field_name = False
+        validate_assignment = True
 
     def __init__(self, *args, **kwargs) -> None:
         self.__instance__ = self.__model__(*args, **kwargs)
@@ -118,3 +120,6 @@ class Model(metaclass=ModelMetaclass):
         elif isinstance(o, pydantic.main.BaseModel):
             return self.__instance__ != o
         return super().__ne__(o)
+
+    def json(self, *args, **kwargs):
+        return self.__instance__.json(*args, **kwargs)
