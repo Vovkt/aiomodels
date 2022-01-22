@@ -45,3 +45,19 @@ class TestModel(TestCase):
         }
 
         self.assertEqual(actual, expected)
+
+    def test_eq(self):
+        class ModelEq(Model):
+            name: str
+
+        user1 = ModelEq(name="Vovkt")
+        user2 = ModelEq(name="Vovkt")
+        self.assertEqual(user1, user2)
+
+    def test_ne(self):
+        class ModelEq(Model):
+            name: str
+
+        user1 = ModelEq(name="Vovkt")
+        user2 = ModelEq(name="Natasyna")
+        self.assertNotEqual(user1, user2)
