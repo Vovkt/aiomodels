@@ -6,12 +6,12 @@ import pydantic.class_validators
 
 
 class ModelMetaclass(type):
-    def __new__(mcs, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs: t.Dict[str, t.Any]):
         pydantic_fields = mcs.get_fields_for_pydantic(attrs)
         pydantic_fields["__annotations__"] = mcs.get_annotations_for_pydantic(attrs)
         mcs.create_model(name, bases, attrs, pydantic_fields)
 
-        attrs['__instance__'] = None
+        attrs.setdefault("__instance__", None)
         cls = super().__new__(mcs, name, bases, attrs)
 
         return cls
