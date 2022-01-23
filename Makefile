@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := check
 
 install:
 	python -m pip install -e .

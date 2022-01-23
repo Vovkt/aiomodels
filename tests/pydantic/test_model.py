@@ -73,3 +73,13 @@ class TestModel(TestCase):
         b = ModelS(val=1)
         with self.assertRaises(ValidationError):
             b.val = "s"
+
+    def test_dict(self):
+        class ModelMethod(Model):
+            val: int
+
+        model = ModelMethod(val=1)
+        self.assertEqual(
+            model.dict(),
+            {"id": None, "val": 1},
+        )

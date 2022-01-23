@@ -42,7 +42,7 @@ class ModelMetaclass(type):
             elif name.startswith("__") or callable(value):
                 continue
             else:
-                result[name] = value
+                result[name] = attrs.pop(name)
 
         return result
 
@@ -120,6 +120,3 @@ class Model(metaclass=ModelMetaclass):
         elif isinstance(o, pydantic.main.BaseModel):
             return self.__instance__ != o
         return super().__ne__(o)
-
-    def json(self, *args, **kwargs):
-        return self.__instance__.json(*args, **kwargs)
